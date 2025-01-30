@@ -31,10 +31,6 @@ jobs:
         ECR_REPOSITORY: assignmentdocker-dev-ecr-repo
         IMAGE_TAG: v0.1
       run: |
-        ls -ltra
-        # Creating Network
-        docker network create -d bridge new-network
-        
         # Docker build command
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:mysql$IMAGE_TAG -f Dockerfile_mysql .
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:myweb$IMAGE_TAG -f Dockerfile .
