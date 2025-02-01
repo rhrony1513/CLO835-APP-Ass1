@@ -34,6 +34,19 @@ jobs:
         # Docker build command
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:mysql$IMAGE_TAG -f Dockerfile_mysql .
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:myweb$IMAGE_TAG -f Dockerfile .
-        
+        # Creating Network
+        docker network create -d bridge new-network 
+        # Unit tests
+        docker run --name mydatabase --network new-network -d -e MYSQL_ROOT_PASSWORD=${{ secrets.DBPASSWORD }} $ECR_REGISTRY/$ECR_REPOSITORY:mysql$IMAGE_TAG
+        echo "Pause for 15 seconds to let container start"
+        sleep 15
+        export DBHOST=$(docker inspect -f '{{.NetworkSettings.Networks.new-network.IPAddress}}' mydatabase)
+        export DBPORT=3306
+        export DBUSER=root
+        docker run --name mywebsite --network new-network -p 8080:8080  -e APP_COLOR="blue" -e DBHOST=$DBHOST -e DBPORT=$DBPORT -e  DBUSER=$DBUSER -e DBPWD=${{ secrets.DBPASSWORD }}  $ECR_REGISTRY/$ECR_REPOSITORY:myweb$IMAGE_TAG
+        echo "Pause for 10 seconds to let container start"
+        sleep 10
+        # Test website
+        curl localhost:8080 -vvv
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:mysql$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:myweb$IMAGE_TAG
