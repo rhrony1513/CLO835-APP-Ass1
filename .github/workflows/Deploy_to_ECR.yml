@@ -43,8 +43,12 @@ jobs:
         echo "Pause for 30 seconds to let container start"
         sleep 30
 
-        # Fetch Database Host (Fixed Version)
-        export export DBHOST=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mydatabase)
+       # Fetch Database Host
+        DBHOST=$(docker inspect -f '{{range .NetworkSettings.Networks.new-network}}{{.IPAddress}}{{end}}' mydatabase)
+        if [ -z "$DBHOST" ]; then
+            DBHOST="host.docker.internal"
+        fi
+        export DBHOST
         export DBPORT=3306
         export DBUSER=root
 
@@ -55,9 +59,13 @@ jobs:
         
         echo "Pause for 15 seconds to let container start"
         sleep 15
-
+        
+        # Fetch Web Application IP (Fixed Curl Command)
+        APP_IP=$(docker inspect -f '{{range .NetworkSettings.Networks.new-network}}{{.IPAddress}}{{end}}' mywebsite)
+        echo "Flask is running on: $APP_IP"
+        
         # Test Website
-        curl localhost:8080 -vvv
+        curl http://$APP_IP:8080 -vvv
 
         # Push Images to ECR
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:mysql$IMAGE_TAG
