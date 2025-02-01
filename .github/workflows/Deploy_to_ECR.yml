@@ -27,7 +27,7 @@ jobs:
     - name: Build, test, tag, and push image to Amazon ECR
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: clo835_assign1-repo
+        ECR_REPOSITORY: clo835_assign1-dev-repo
         IMAGE_TAG: v0.1
       run: |
         # Docker build command
