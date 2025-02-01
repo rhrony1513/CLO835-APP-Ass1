@@ -44,7 +44,7 @@ jobs:
         sleep 30
 
         # Fetch Database Host (Fixed Version)
-        export DBHOST=$(docker inspect -f '{{.NetworkSettings.Networks["new-network"].IPAddress}}' mydatabase)
+        export DBHOST=$(docker inspect mydatabase --format '{{.NetworkSettings.Networks.new-network.IPAddress}}')
         export DBPORT=3306
         export DBUSER=root
 
