@@ -10,7 +10,6 @@ jobs:
     name: Build Image
     runs-on: ubuntu-latest
 
-   
     steps:
 
     - name: Check out code
@@ -34,19 +33,39 @@ jobs:
         # Docker build command
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:mysql$IMAGE_TAG -f Dockerfile_mysql .
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:myweb$IMAGE_TAG -f Dockerfile .
-        # Creating Network
+        
+        # Create Docker Network
         docker network create -d bridge new-network 
-        # Unit tests
+        
+        # Start MySQL Container
         docker run --name mydatabase --network new-network -d -e MYSQL_ROOT_PASSWORD=${{ secrets.DBPASSWORD }} $ECR_REGISTRY/$ECR_REPOSITORY:mysql$IMAGE_TAG
-        echo "Pause for 30 seconds to let container start"
-        sleep 30
-        export DBHOST=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mydatabase)
-        export DBPORT=3306
-        export DBUSER=root
-        docker run --name mywebsite --network new-network -p 8080:8080  -e APP_COLOR="blue" -e DBHOST=$DBHOST -e DBPORT=$DBPORT -e  DBUSER=$DBUSER -e DBPWD=${{ secrets.DBPASSWORD }}  $ECR_REGISTRY/$ECR_REPOSITORY:myweb$IMAGE_TAG
+        
+        echo "Waiting for MySQL to be ready..."
+        until docker exec mydatabase mysqladmin ping -h"localhost" --silent; do
+            echo "MySQL is still starting..."
+            sleep 5
+        done
+        echo "MySQL is ready!"
+
+        # Fetch Database Host
+        DBHOST=$(docker inspect -f '{{range .NetworkSettings.Networks.new-network}}{{.IPAddress}}{{end}}' mydatabase)
+        DBPORT=3306
+        DBUSER=root
+
+        # Start Web Application
+        docker run --name mywebsite --network new-network -p 8080:8080 \
+            -e APP_COLOR="blue" -e DBHOST=$DBHOST -e DBPORT=$DBPORT -e DBUSER=$DBUSER -e DBPWD=${{ secrets.DBPASSWORD }} \
+            $ECR_REGISTRY/$ECR_REPOSITORY:myweb$IMAGE_TAG
+        
         echo "Pause for 10 seconds to let container start"
         sleep 10
-        # Test website
-        curl localhost:8080 -vvv
+
+        # Fetch Web Application IP
+        APP_IP=$(docker inspect -f '{{range .NetworkSettings.Networks.new-network}}{{.IPAddress}}{{end}}' mywebsite)
+
+        # Test Website (Updated Curl Command)
+        curl http://$APP_IP:8080 -vvv
+
+        # Push Images to ECR
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:mysql$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:myweb$IMAGE_TAG
