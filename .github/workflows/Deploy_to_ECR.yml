@@ -30,7 +30,7 @@ jobs:
         ECR_REPOSITORY: clo835_assign1-dev-repo
         IMAGE_TAG: v0.1
       run: |
-        # Docker build command
+        # Docker build commands
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:mysql$IMAGE_TAG -f Dockerfile_mysql .
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:myweb$IMAGE_TAG -f Dockerfile .
 
