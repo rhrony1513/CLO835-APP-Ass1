@@ -44,7 +44,7 @@ jobs:
         sleep 30
 
         # Fetch Database Host (Fixed Version)
-        export DBHOST=$(docker inspect mydatabase --format '{{.NetworkSettings.Networks.new-network.IPAddress}}')
+        export export DBHOST=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mydatabase)
         export DBPORT=3306
         export DBUSER=root
 
@@ -53,8 +53,8 @@ jobs:
             -e APP_COLOR="blue" -e DBHOST=$DBHOST -e DBPORT=$DBPORT -e DBUSER=$DBUSER -e DBPWD=${{ secrets.DBPASSWORD }}  \
             $ECR_REGISTRY/$ECR_REPOSITORY:myweb$IMAGE_TAG
         
-        echo "Pause for 10 seconds to let container start"
-        sleep 10
+        echo "Pause for 15 seconds to let container start"
+        sleep 15
 
         # Test Website
         curl localhost:8080 -vvv
