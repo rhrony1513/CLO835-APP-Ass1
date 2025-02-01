@@ -40,7 +40,7 @@ jobs:
         # Start MySQL Database
         docker run --name mydatabase --network new-network -d -e MYSQL_ROOT_PASSWORD=${{ secrets.DBPASSWORD }} $ECR_REGISTRY/$ECR_REPOSITORY:mysql$IMAGE_TAG
         
-        echo "Pause for 30 seconds to let container start"
+        echo "Pause for 25 seconds to let container start"
         sleep 30
 
        # Fetch Database Host
