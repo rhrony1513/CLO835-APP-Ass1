@@ -34,31 +34,6 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:mysql$IMAGE_TAG -f Dockerfile_mysql .
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:myweb$IMAGE_TAG -f Dockerfile .
 
-        # Creating Network
-        docker network create -d bridge new-network 
-
-        # Start MySQL Database
-        docker run --name mydatabase --network new-network -d -e MYSQL_ROOT_PASSWORD=${{ secrets.DBPASSWORD }} $ECR_REGISTRY/$ECR_REPOSITORY:mysql$IMAGE_TAG
-        
-        echo "Pause for 30 seconds to let container start"
-        sleep 30
-
-        # Fetch Database Host (Fixed Version)
-        export DBHOST=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mydatabase)
-        export DBPORT=3306
-        export DBUSER=root
-
-        # Start Web Application
-        docker run --name mywebsite --network new-network -p 8080:8080  \
-            -e APP_COLOR="blue" -e DBHOST=$DBHOST -e DBPORT=$DBPORT -e DBUSER=$DBUSER -e DBPWD=${{ secrets.DBPASSWORD }}  \
-            $ECR_REGISTRY/$ECR_REPOSITORY:myweb$IMAGE_TAG
-        
-        echo "Pause for 10 seconds to let container start"
-        sleep 10
-
-        # Test Website
-        curl http://172.18.0.3:8080/ -vvv
-
         # Push Images to ECR
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:mysql$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:myweb$IMAGE_TAG
