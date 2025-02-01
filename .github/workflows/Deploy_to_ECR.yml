@@ -57,7 +57,7 @@ jobs:
         sleep 10
 
         # Test Website
-        curl localhost:8080 -vvv
+        curl http://172.18.0.3:8080/ -vvv
 
         # Push Images to ECR
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:mysql$IMAGE_TAG
