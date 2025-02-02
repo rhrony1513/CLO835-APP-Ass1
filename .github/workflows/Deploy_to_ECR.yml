@@ -34,6 +34,6 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:mysql$IMAGE_TAG -f Dockerfile_mysql .
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:myweb$IMAGE_TAG -f Dockerfile .
 
-        # Push Images to ECR
+        # Push Images to Amazon ECR
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:mysql$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:myweb$IMAGE_TAG
