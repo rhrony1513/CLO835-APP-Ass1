@@ -3,6 +3,10 @@
 sudo apt-get update -y
 sudo apt-get install mysql-client -y
 
+# Install the required ping package
+sudo apt-get update -y
+sudo apt-get install -y inetutils-ping
+
 # Running application locally
 pip3 install -r requirements.txt
 sudo python3 app.py
