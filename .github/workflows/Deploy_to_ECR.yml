@@ -4,9 +4,7 @@ on:
     branches: [ main ]
 
 jobs:
-  
   build:
-    
     name: Build Image
     runs-on: ubuntu-latest
 
@@ -24,16 +22,19 @@ jobs:
         AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
         AWS_REGION: us-east-1
 
-    - name: Build, test, tag, and push image to Amazon ECR
+    - name: Build, tag, and push MySQL and WebApp images to Amazon ECR
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: clo835_assign1-dev-repo
+        MYSQL_REPOSITORY: clo835_assign2-mysql  # ✅ Separate repository for MySQL
+        WEBAPP_REPOSITORY: clo835_assign2-webapp  # ✅ Separate repository for WebApp
         IMAGE_TAG: v0.1
       run: |
-        # Docker Build Commands
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:mysql$IMAGE_TAG -f Dockerfile_mysql .
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:myweb$IMAGE_TAG -f Dockerfile .
-
+        # Build MySQL Image
+        docker build -t $ECR_REGISTRY/$MYSQL_REPOSITORY:$IMAGE_TAG -f Dockerfile_mysql .
+        
+        # Build WebApp Image
+        docker build -t $ECR_REGISTRY/$WEBAPP_REPOSITORY:$IMAGE_TAG -f Dockerfile .
+        
         # Push Images to Amazon ECR
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:mysql$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:myweb$IMAGE_TAG
+        docker push $ECR_REGISTRY/$MYSQL_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$WEBAPP_REPOSITORY:$IMAGE_TAG
